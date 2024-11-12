@@ -85,6 +85,8 @@ cari.addActionListener(new ActionListener() {
 ### 5. Hasil Program
 Aplikasi ini menampilkan hasil berupa suhu dan kondisi cuaca kota yang dipilih. Data cuaca juga dapat disimpan ke dalam file CSV.
 
+![S](https://github.com/atmafathulhadi//Tugas6-AplikasiCekCuacaSederhana/blob/main/S.png)
+
 ### 6. Indikator Penilaian
 | No  | Komponen         |  Persentase  |
 | :-: | ---------------- |   :-----:    |
