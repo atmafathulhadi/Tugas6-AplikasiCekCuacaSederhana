@@ -1,94 +1,89 @@
- 
-# Aplikasi Penghitung Kata
+
+# Aplikasi Cek Cuaca Sederhana
 
 **Tugas Pemrograman GUI**  
 Nama: Atma Fathul Hadi  
 NPM: 2210010425  
 
 ## 1. Deskripsi Program
-Aplikasi ini adalah program berbasis GUI menggunakan Java untuk menghitung jumlah kata dan karakter dalam teks yang dimasukkan oleh pengguna. Program ini juga memungkinkan pengguna untuk mencari kata dalam teks dan menyimpan hasil perhitungan ke dalam file. Teks dapat disalin ke dalam area input, dan program akan menampilkan jumlah kata, karakter, dan memberi informasi tentang jumlah kemunculan kata yang dicari.
+Aplikasi ini adalah program berbasis GUI menggunakan Java untuk mengecek cuaca pada kota-kota tertentu. Program ini memungkinkan pengguna untuk melihat kondisi cuaca pada kota favorit, menyimpan hasil perhitungan ke dalam file, dan melakukan pencarian kondisi cuaca dari kota yang dipilih. Data cuaca diperoleh dari API eksternal.
 
 ## 2. Komponen GUI
 Aplikasi ini menggunakan komponen GUI berikut:
 
 - **JFrame**: Sebagai jendela utama aplikasi.
 - **JPanel**: Untuk mengatur layout dan grup komponen.
-- **JLabel**: Digunakan untuk menampilkan label teks.
-- **JTextArea**: Tempat untuk memasukkan teks yang akan dihitung.
-- **JTextField**: Digunakan untuk memasukkan kata yang ingin dicari dalam teks.
-- **JButton**: Tombol untuk mencari kata, menyimpan hasil, dan keluar.
-- **JScrollPane**: Untuk memberikan scroll pada area teks.
-- **JFileChooser**: Untuk memilih tempat penyimpanan file hasil perhitungan.
+- **JLabel**: Digunakan untuk menampilkan label teks dan ikon cuaca.
+- **JTextField**: Tempat untuk memasukkan nama kota yang akan dicari.
+- **JComboBox**: Untuk memilih kota favorit.
+- **JButton**: Tombol untuk mencari cuaca, menyimpan hasil, dan keluar.
+- **JTable**: Untuk menampilkan data cuaca kota.
+- **JScrollPane**: Untuk memberikan scroll pada tabel.
+- **JFileChooser**: Untuk memilih tempat penyimpanan file hasil pencarian cuaca.
 
 ## 3. Logika Program
-Program ini bekerja dengan cara menghitung jumlah kata dan karakter yang ada di dalam teks yang dimasukkan pengguna. Pengguna dapat melakukan hal berikut:
-- Menghitung jumlah kata dan karakter.
-- Mencari kata tertentu dalam teks dan menghitung kemunculannya.
-- Menyimpan hasil perhitungan ke dalam file teks.
+Program ini bekerja dengan cara mengambil data cuaca dari API berdasarkan kota yang dimasukkan atau dipilih pengguna. Pengguna dapat melakukan hal berikut:
+- Mengecek cuaca pada kota yang dipilih atau dimasukkan.
+- Menampilkan data suhu dan kondisi cuaca pada tabel.
+- Menyimpan data cuaca ke dalam file.
 
 ### Kode Terkait:
 ```java
-private void updateCounts() {
-    String text = inputtext.getText();
-    int wordCount = text.trim().isEmpty() ? 0 : text.trim().split("\s+").length;
-    int charCount = text.length();
-    hasil.setText("Jumlah Kata: " + wordCount + ", Jumlah Karakter: " + charCount);
+private void perbaruiTampilanCuaca(String jsonResponse, String kota) {
+    JSONObject weatherJson = new JSONObject(jsonResponse);
+    JSONObject kondisiCuaca = weatherJson.getJSONObject("currentConditions");
+
+    double suhu = kondisiCuaca.getDouble("temp");
+    String kondisiCuacaStr = kondisiCuaca.getString("conditions");
+
+    model.addRow(new Object[]{kota, String.valueOf(suhu), kondisiCuacaStr});
+    simpanDataCuacaKeFile(kota, String.valueOf(suhu), kondisiCuacaStr);
 }
 ```
-### Fungsi updateCounts() akan mengupdate jumlah kata dan karakter setiap kali ada perubahan pada input teks.
+### Fungsi `perbaruiTampilanCuaca` digunakan untuk memperbarui tampilan tabel dengan data cuaca yang baru.
 
 ```java
-private void searchInText() {
-    String text = inputtext.getText();
-    String searchWord = cariText.getText().trim();
-    if (searchWord.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Silakan masukkan kata yang ingin dicari.", "Error", JOptionPane.ERROR_MESSAGE);
-        return;
-    }
+private void cariActionPerformed(java.awt.event.ActionEvent evt) {                                     
+    String kota = jTextField1.getText().trim();
+    String response = ambilDataCuaca(kota);
 
-    int count = 0;
-    Pattern pattern = Pattern.compile("\b" + Pattern.quote(searchWord) + "\b", Pattern.CASE_INSENSITIVE);
-    Matcher matcher = pattern.matcher(text);
-    while (matcher.find()) {
-        count++;
+    if (response != null) {
+        perbaruiTampilanCuaca(response, kota);
+    } else {
+        jLabel2.setText("Gagal mendapatkan data cuaca.");
     }
-
-    JOptionPane.showMessageDialog(this, "Kata "" + searchWord + "" ditemukan sebanyak " + count + " kali.");
 }
 ```
-### Fungsi searchInText() digunakan untuk mencari dan menghitung berapa kali kata yang dimasukkan muncul dalam teks.
+### Fungsi `cariActionPerformed` menangani aksi pencarian dan menampilkan data cuaca kota yang diminta.
 
 ### 4. Events
-ActionListener pada tombol Keluar: Menutup aplikasi saat tombol "Keluar" ditekan.
+- **ActionListener pada tombol Keluar**: Menutup aplikasi saat tombol "Keluar" ditekan.
 ```java
-keluar.addActionListener(new ActionListener() {
+Keluar.addActionListener(new ActionListener() {
     public void actionPerformed(ActionEvent e) {
         System.exit(0);
     }
 });
 ```
-### ActionListener pada tombol Simpan: Menyimpan hasil perhitungan ke dalam file.
+- **ActionListener pada tombol Simpan**: Menyimpan hasil pencarian cuaca ke dalam file.
 ```java
 simpan.addActionListener(new ActionListener() {
     public void actionPerformed(ActionEvent e) {
-        saveToFile();
+        simpanDataCuacaKeFile(kota, suhu, kondisi);
     }
 });
 ```
-### ActionListener pada tombol Cari: Mencari kata yang dimasukkan dalam teks.
+- **ActionListener pada tombol Cari**: Mencari kondisi cuaca dari kota yang dipilih atau dimasukkan.
 ```java
-cariButton.addActionListener(new ActionListener() {
+cari.addActionListener(new ActionListener() {
     public void actionPerformed(java.awt.event.ActionEvent evt) {
-        cariButtonActionPerformed(evt);
+        cariActionPerformed(evt);
     }
 });
 ```
+
 ### 5. Hasil Program
-Aplikasi ini menampilkan hasil berupa jumlah kata, jumlah karakter, dan informasi tentang jumlah kemunculan kata yang dicari. Hasil tersebut dapat disimpan dalam file teks.
-
-Screenshot Hasil Program:
-![S](https://github.com/atmafathulhadi/Tugas6-AplikasiCekCuacaSederhana/blob/main/S.png)
-
+Aplikasi ini menampilkan hasil berupa suhu dan kondisi cuaca kota yang dipilih. Data cuaca juga dapat disimpan ke dalam file CSV.
 
 ### 6. Indikator Penilaian
 | No  | Komponen         |  Persentase  |
@@ -101,9 +96,8 @@ Screenshot Hasil Program:
 |     | **TOTAL**        | 100%         |
 
 ### 7. Cara Menjalankan Program
-Buka program di IDE seperti NetBeans atau Eclipse.
-Jalankan program dan masukkan teks pada kolom "Maukkan Kata".
-Klik tombol "Simpan" untuk menyimpan hasil ke dalam file.
-Masukkan kata yang ingin dicari pada kolom "Cari teks" dan klik "Cari".
-Hasil perhitungan kata dan karakter akan ditampilkan di bawahnya.
-Klik "Keluar" untuk menutup aplikasi.
+1. Buka program di IDE seperti NetBeans atau Eclipse.
+2. Jalankan program dan masukkan atau pilih nama kota pada kolom input atau dropdown.
+3. Klik tombol "Cari" untuk mencari cuaca kota yang diinginkan.
+4. Klik tombol "Simpan" untuk menyimpan hasil ke dalam file CSV.
+5. Klik "Keluar" untuk menutup aplikasi.
